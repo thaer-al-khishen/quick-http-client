@@ -3,6 +3,7 @@ package com.relatablecode.quickhttpclientapplication
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.relatablecode.quickhttpclient.cache_helpers.CacheStrategy
 import com.relatablecode.quickhttpclient.network_manager.NetworkManager
 import com.relatablecode.quickhttpclient.request_helpers.NetworkRequest
 import com.relatablecode.quickhttpclient.request_helpers.RequestMethod
@@ -17,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         CoroutineScope(Dispatchers.IO).launch {
-            repeat(1) { iteration ->
+            repeat(5) { iteration ->
                 val startTime = System.currentTimeMillis()
                 NetworkManager.makeNetworkCallWithFullUrl<List<JsonPlaceHolderPost>>(
                     NetworkRequest(
@@ -25,7 +26,8 @@ class MainActivity : AppCompatActivity() {
                         requestMethod = RequestMethod.GET,
                         params = listOf(),
                         headers = mutableListOf(),
-                        retryCount = 3
+                        retryCount = 3,
+                        cacheStrategy = CacheStrategy.NetworkCacheControl(43200, true)
                     )
                 ).fold(
                     onSuccess = {

@@ -55,7 +55,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "com.relatablecode"
             artifactId = "quickhttpclient"
-            version = "1.0.0-beta01"
+            version = "1.0.0-beta02"
 
             afterEvaluate {
                 from(components["release"])

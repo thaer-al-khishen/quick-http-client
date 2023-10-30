@@ -2,6 +2,7 @@ package com.relatablecode.quickhttpclient.network_interactors
 
 
 import android.util.Log
+import com.relatablecode.quickhttpclient.cache_helpers.CacheStrategy
 import com.relatablecode.quickhttpclient.cache_helpers.InMemoryCache
 import com.relatablecode.quickhttpclient.cache_helpers.InMemoryImageCache
 import com.relatablecode.quickhttpclient.interceptors.modifyWith
@@ -128,7 +129,7 @@ object RawHttpClient {
             val response = readResponse(urlConnection)
             logResponse(urlConnection, response)
 
-            cacheIfRequired(networkRequest, inputStream, response)
+            cacheIfRequired(networkRequest, response, inputStream)
 
             return Result.success(response)
 
@@ -144,24 +145,15 @@ object RawHttpClient {
      * This function handles caching for both image responses and general text responses.
      *
      * @param networkRequest The network request parameters and configurations.
-     * @param inputStream The input stream containing the network response.
      * @param response The response as a [String].
      */
-    private suspend fun cacheIfRequired(
-        networkRequest: NetworkRequest,
-        inputStream: InputStream,
-        response: String
-    ) {
-        if (networkRequest.cacheImage == true) {
-            InMemoryImageCache.putAsync(
-                networkRequest.generateCacheKey(),
-                inputStream,
-                networkRequest.imageCacheDuration
-            )
-        }
-
-        if (networkRequest.shouldCache && networkRequest.requestMethod == RequestMethod.GET) {
-            InMemoryCache.putAsync(networkRequest.generateCacheKey(), response)
+    private suspend fun cacheIfRequired(networkRequest: NetworkRequest, response: String, imageStream: InputStream? = null) {
+        if (networkRequest.cacheStrategy == CacheStrategy.InMemory && networkRequest.requestMethod == RequestMethod.GET) {
+            if (imageStream != null) {
+                InMemoryImageCache.putAsync(networkRequest.generateCacheKey(), imageStream)
+            } else {
+                InMemoryCache.putAsync(networkRequest.generateCacheKey(), response)
+            }
         }
     }
 
@@ -234,32 +226,34 @@ object RawHttpClient {
         }
     }
 
+    // ... (all your current functions and members) ...
+
     /**
      * Checks the cache for a previously stored response based on the [NetworkRequest] parameters.
      * If a cached response is found and it's valid, the response is returned immediately.
      *
      * @param networkRequest The network request parameters and configurations.
-     * @param responseHandler A callback to handle the input stream response.
      * @return A [Result] object containing the cached response as a [String] if available, or null otherwise.
      */
-    private suspend fun checkAndRetrieveFromCache(
-        networkRequest: NetworkRequest,
-        responseHandler: (InputStream) -> Unit
-    ): Result<String>? {
-
-        if (networkRequest.cacheImage == true) {
-            InMemoryImageCache.getAsync(networkRequest.generateCacheKey())?.let {
-                responseHandler(it)
-                return@checkAndRetrieveFromCache null
+    private suspend fun checkAndRetrieveFromCache(networkRequest: NetworkRequest, responseHandler: (InputStream) -> Unit): Result<String>? {
+        when (networkRequest.cacheStrategy) {
+            CacheStrategy.None -> return null
+            CacheStrategy.InMemory -> InMemoryCache.getAsync(networkRequest.generateCacheKey())?.let {
+                if (networkRequest.isImageRequest == true) {
+                    InMemoryImageCache.getAsync(networkRequest.generateCacheKey())?.let {
+                        responseHandler.invoke(it)
+                    }
+                } else {
+                    InMemoryCache.getAsync(networkRequest.generateCacheKey())?.let {
+                        return Result.success(it)
+                    }
+                }
+            }
+            is CacheStrategy.NetworkCacheControl -> {
+                // As you are already handling cache-control headers in the NetworkRequest,
+                // you can leave this case empty, unless you have additional logic you'd like to implement here.
             }
         }
-
-        if (networkRequest.shouldCache && networkRequest.requestMethod == RequestMethod.GET) {
-            InMemoryCache.getAsync(networkRequest.generateCacheKey())?.let {
-                return@checkAndRetrieveFromCache Result.success(it)
-            }
-        }
-
         return null
     }
 

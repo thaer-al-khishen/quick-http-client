@@ -6,18 +6,6 @@ import com.relatablecode.quickhttpclient.request_helpers.NetworkRequest
 import java.net.HttpURLConnection
 
 /**
- * Generates a cache key for the given [NetworkRequest].
- *
- * @return A string representing the cache key for this request.
- */
-fun NetworkRequest.generateCacheKey(): String {
-    val method = requestMethod.name
-    val headerKeys = headers.joinToString(",") { it.key }
-    val paramKeys = params.joinToString(",") { it.key }
-    return "$method:$endpoint:$headerKeys:$paramKeys"
-}
-
-/**
  * Logs the details of the given [NetworkRequest] and [HttpURLConnection] for debugging purposes.
  *
  * @param networkRequest The network request to be logged.
