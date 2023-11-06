@@ -10,7 +10,16 @@ Quick HTTP Client is a Kotlin-based library that simplifies the process of makin
 - Logging - Detailed logging to help with debugging and tracking network requests.
 
 ## Installation
-
+To use the QuickHttpClient library in your project, add the following to your `settings.gradle` file
+```groovy
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+        // Other repositories
+    }
+}
+```
+Then, add the dependency to your module-level build.gradle file:
 ```groovy
 implementation "com.github.thaer-al-khishen:quick-http-client:1.0.0-beta01"
 ```
