@@ -72,10 +72,22 @@ class MainApplication : Application() {
 
 ## Usage
 ```kotlin
-NetworkManager.makeNetworkCall<List<JsonPlaceHolderPost>>(
+NetworkManager.makeNetworkCallWithKtor<List<JsonPlaceHolderPost>>(
   NetworkRequest(
     endpoint = "https://jsonplaceholder.typicode.com/posts",
-    requestMethod = RequestMethod.GET,
+    requestMethod = RequestMethod.POST,
+    body = makeRequestBody(
+      JsonPlaceHolderPost(
+        userId = 1,
+        title = "Thaer",
+        body = "Body",
+        id = 1
+      )
+    ),
+    params = listOf(
+    QueryParameter("query", "getAll")
+    ),
+    headers = mutableListOf(RequestHeader("Content-Type", "application/json"))
   )
 )
 ```
