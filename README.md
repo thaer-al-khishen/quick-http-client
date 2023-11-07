@@ -24,6 +24,52 @@ Then, add the dependency to your module-level build.gradle file:
 implementation "com.github.thaer-al-khishen:quick-http-client:1.0.0-beta01"
 ```
 
+## Initialization
+Before using QuickHttpClient in your application, you need to initialize it within your `Application` class. This is a crucial step that should be done before making any network requests. Below is a sample initialization in the `MainApplication` class.
+
+```kotlin
+class MainApplication : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+        // Initialize QuickHttpClient
+        QuickHttpClientConfig.initialize()
+            // Uncomment and configure SSL pinning as needed
+            /*
+            .configureSSLPinning(
+                SSLPinningMethod.PublicKeyPinning(
+                    publicKeys = listOf(
+                        "YOUR_DUMMY_PUBLIC_KEY_1",
+                        "YOUR_DUMMY_PUBLIC_KEY_2"
+                    )
+                )
+            )
+            .configureSSLPinning(
+                SSLPinningMethod.CertificatesPinning(
+                    certificates = listOf(
+                        "YOUR_DUMMY_CERTIFICATE_FINGERPRINT_1",
+                        "YOUR_DUMMY_CERTIFICATE_FINGERPRINT_2"
+                    )
+                )
+            )
+            .configureHostNameVerification("your.domain.com")
+            */
+            // Add a request interceptor if needed
+            .addRequestInterceptor(object : RequestInterceptor {
+                override fun intercept(networkRequest: NetworkRequest?): RequestModifier {
+                    networkRequest?.let {
+                        Log.d("QuickHttpClientInterceptor", "Intercepting request: $it")
+                    }
+                    // Modify the request as needed
+                    return RequestModifier()
+                }
+            })
+            // Enable or disable logging
+            .setLoggingCondition(true)
+    }
+}
+```
+
 ## Usage
 ```kotlin
 NetworkManager.makeNetworkCall<List<JsonPlaceHolderPost>>(
