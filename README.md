@@ -72,7 +72,7 @@ class MainApplication : Application() {
 
 ## Usage
 ```kotlin
-NetworkManager.makeNetworkCallWithKtor<List<JsonPlaceHolderPost>>(
+NetworkManager.makeNetworkCall<List<JsonPlaceHolderPost>>(
   NetworkRequest(
     endpoint = "https://jsonplaceholder.typicode.com/posts",
     requestMethod = RequestMethod.POST,
